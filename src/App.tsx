@@ -1,48 +1,39 @@
-import React, { useEffect, useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
-import Card from './components/card'
+import * as React from "react";
+import { useSelector, shallowEqual, useDispatch } from "react-redux";
+import "./App.css";
+import { Article } from "./components/Article";
+import { AddArticle } from "./components/AddArticle";
+import { addArticle, removeArticle } from "./redux/store/actionCreators";
+import { Dispatch } from "redux";
 
 const App: React.FC = () => {
-  const [data, setData] = useState([])
-  const [loading, setloading] = useState(false)
+  const articles: readonly IArticle[] = useSelector(
+    (state: ArticleState) => state.articles,
+    shallowEqual
+  );
 
-  ///for calling an API
-  const getUsers = async () => {
-    setloading(true)
-    const response = await fetch('https://api.github.com/users')
-    const data = await response.json()
-    setloading(false)
-    setData(data)
-  }
+  const dispatch: Dispatch<any> = useDispatch();
 
-  //handler for calling an api method to render the users
-  const handleUsers = () => {
-    getUsers()
-  }
+  const saveArticle = React.useCallback(
+    (article: IArticle) => dispatch(addArticle(article)),
+    [dispatch]
+  );
+
+
 
   return (
-    <>
-      <h1 className="text-center mt-5">Github Users</h1>
-      <button
-        type="button"
-        className="btn btn-primary ml-5 mt-5"
-        onClick={() => handleUsers()}
-      >
-        {loading && (
-          <div className="spinner-border spinner-border-sm" role="status">
-            <span className="sr-only"></span>
-          </div>
-        )}
-        Show Users
-      </button>
-      <div className="container-fluid mt-5">
-        <div className="row text-center">
-          <Card data={data} />
-        </div>
-      </div>
-    </>
-  )
-}
+    <main>
+      <h1>My Articles</h1>
+      <AddArticle saveArticle={saveArticle} />
+      {articles.map((article: IArticle) => (
+        <Article
+          key={article.id}
+          article={article}
+          removeArticle={removeArticle}
+        />
+      ))}
+    </main>
+  );
+};
 
-export default App
+export default App;
